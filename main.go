@@ -1,22 +1,24 @@
 package main
 
 import (
+	"Building-micreoservices-with-go/handlers"
 	"fmt"
-	"io/ioutil"
+	"log"
+	"os"
+
 	// "log"
 	"net/http"
 )
 
-// func helloHandler()
 func main() {
-    http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-        d, err := ioutil.ReadAll(r.Body) 
-        if err != nil {
-            http.Error(rw, "something went wrong", http.StatusBadRequest)
-            return
-        }
-        fmt.Fprintf(rw, "hello %s\n", d)
-    })
-    fmt.Println("Server running on port 9090")
-    http.ListenAndServe(":9090", nil)
+
+	l := log.New(os.Stdout, "product-api", log.LstdFlags)
+	hh := handlers.NewHello(l)
+	sm := http.NewServeMux()
+	sm.Handle("/", hh)
+
+	gh := handlers.NewBye(l)
+	sm.Handle("/goodbye", gh)
+	fmt.Println("Server running on port 9090")
+	http.ListenAndServe(":9090", sm)
 }
