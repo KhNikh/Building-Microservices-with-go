@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"Building-micreoservices-with-go/data"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,11 +16,8 @@ func NewProduct(l *log.Logger) *Product {
 }
 
 func (p *Product) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	d := data.GetProducts()
-
-	jd, err := json.Marshal(d)
+	err := data.ToJson(rw)
 	if err != nil {
 		fmt.Println(err)
 	}
-	rw.Write(jd)
 }

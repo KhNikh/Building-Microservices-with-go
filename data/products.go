@@ -1,5 +1,10 @@
 package data
 
+import (
+	"encoding/json"
+	"io"
+)
+
 type Product struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
@@ -9,6 +14,12 @@ type Product struct {
 	CreationOn  string `json:"-"`
 	UpdationOn  string `json:"-"`
 	DeletionOn  string `json:"-"`
+}
+
+func ToJson(w io.Writer) error {
+	e := json.NewEncoder(w)
+	return e.Encode(GetProducts())
+
 }
 
 func GetProducts() []*Product {
