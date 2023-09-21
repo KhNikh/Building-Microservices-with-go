@@ -16,8 +16,31 @@ func NewProduct(l *log.Logger) *Product {
 }
 
 func (p *Product) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	err := data.ToJson(rw)
+	if r.Method == http.MethodGet {
+		p.getProduct(rw, r)
+		return
+	} else if r.Method == http.MethodPost {
+		p.addProduct(rw, r)
+		return
+	}
+	rw.WriteHeader(http.StatusMethodNotAllowed)
+}
+
+func (p *Product) getProduct(rw http.ResponseWriter, r *http.Request) {
+	lp := data.GetProducts()
+	err := lp.ToJson(rw)
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func (p *Product) addProduct(rw http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("Handling Post Request")
+	prod := &data.Product{}
+	err := prod.FromJson(r.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	data.AddProduct(prod)
 }

@@ -16,15 +16,31 @@ type Product struct {
 	DeletionOn  string `json:"-"`
 }
 
-func ToJson(w io.Writer) error {
+type Products []*Product
+
+func (p *Products) ToJson(w io.Writer) error {
 	e := json.NewEncoder(w)
-	return e.Encode(GetProducts())
+	return e.Encode(p)
 
 }
 
-func GetProducts() []*Product {
-	pl := productList
-	return pl
+func (p *Product) FromJson(r io.Reader) error {
+	d := json.NewDecoder(r)
+	return d.Decode(p)
+}
+
+func GetProducts() Products {
+	lp := productList
+	return lp
+}
+
+func AddProduct(prod *Product) {
+	prod.ID = getNextId()
+	productList = append(productList, prod)
+}
+
+func getNextId() int {
+	return len(productList) + 1
 }
 
 var productList = []*Product{
