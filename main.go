@@ -14,9 +14,9 @@ import (
 func main() {
 
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
-	hh := handlers.NewHello(l)
+	// hh := handlers.NewHello(l)
 	sm := http.NewServeMux()
-	sm.Handle("/", hh)
+	// sm.Handle("/", hh)
 
 	gh := handlers.NewBye(l)
 	sm.Handle("/goodbye", gh)
