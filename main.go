@@ -22,7 +22,7 @@ func main() {
 	sm.Handle("/goodbye", gh)
 
 	ph := handlers.NewProduct(l)
-	sm.Handle("/products", ph)
+	sm.Handle("/products/", ph)
 	// Creating a custom server and
 	s := &http.Server{
 		Addr:         ":9090",
