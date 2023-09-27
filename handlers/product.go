@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type Product struct {
@@ -68,12 +71,17 @@ func (p *Product) addProduct(rw http.ResponseWriter, r *http.Request) {
 	data.AddProduct(prod)
 }
 
-func (p *Product) updateProduct(rw http.ResponseWriter, r *http.Request, id int) {
-	prod := &data.Product{}
-	err := prod.FromJson(r.Body)
+func (p *Product) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		fmt.Println(err)
+		http.Error(rw, "Unable to convert id", http.StatusBadRequest)
+		return
 	}
+	prod := &data.Product{}
+	err = prod.FromJson(r.Body)
+
 	err = data.UpdateProduct(id, prod)
 	if err == data.ProductNotFound {
 		http.Error(rw, "Product not found", http.StatusNotFound)

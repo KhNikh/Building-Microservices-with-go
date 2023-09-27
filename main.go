@@ -24,8 +24,11 @@ func main() {
 	// sm.Handle("/goodbye", gh)
 
 	ph := handlers.NewProduct(l)
-	getRouter := sm.Methods("GET").Subrouter()
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/", ph.GetProduct)
+
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", ph.UpdateProduct)
 	// sm.Handle("/products/", ph)
 	// Creating a custom server and
 	s := &http.Server{
