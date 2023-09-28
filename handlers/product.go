@@ -56,15 +56,25 @@ func (p *Product) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 
 type KeyProduct struct{}
 
-func (p Product) JsonValidationMiddleware(next http.Handler) http.Handler {
+func (p *Product) JsonValidationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		p.l.Println("cp---1")
 		prod := data.Product{}
 		err := prod.FromJson(r.Body)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("[ERROR] deserializing product", err)
+			http.Error(rw, "ERROR reading product", http.StatusBadRequest)
 			return
 		}
+		err = prod.ValidateProduct()
+
+		if err != nil {
+			fmt.Println("[ERROR] validating product", err)
+			http.Error(rw, "ERROR validating product", http.StatusBadRequest)
+			p.l.Println(err)
+			return
+		}
+
 		ctx := context.WithValue(r.Context(), KeyProduct{}, &prod)
 		req := r.WithContext(ctx)
 		next.ServeHTTP(rw, req)
