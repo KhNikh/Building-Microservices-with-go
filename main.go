@@ -29,6 +29,11 @@ func main() {
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
 	putRouter.HandleFunc("/{id:[0-9]+}", ph.UpdateProduct)
+	putRouter.Use(ph.JsonValidationMiddleware)
+
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", ph.AddProduct)
+	postRouter.Use(ph.JsonValidationMiddleware)
 	// sm.Handle("/products/", ph)
 	// Creating a custom server and
 	s := &http.Server{
@@ -38,8 +43,8 @@ func main() {
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,
 	}
-	fmt.Println("Server running on port 9090")
 	go func() {
+		fmt.Println("Server running on port 9090")
 		err := s.ListenAndServe()
 		if err != nil {
 			l.Fatal(err)

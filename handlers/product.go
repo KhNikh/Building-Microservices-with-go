@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"Building-micreoservices-with-go/data"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,40 +19,6 @@ func NewProduct(l *log.Logger) *Product {
 	return &Product{l}
 }
 
-// func (p *Product) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-// 	if r.Method == http.MethodGet {
-// 		p.getProduct(rw, r)
-// 		return
-// 	} else if r.Method == http.MethodPost {
-// 		p.addProduct(rw, r)
-// 		return
-// 	} else if r.Method == http.MethodPut {
-// 		p.l.Println("PUT", r.URL.Path)
-// 		urlPattern := "/([0-9]+)"
-// 		re := regexp.MustCompile(urlPattern)
-// 		matchGroup := re.FindAllStringSubmatch(r.URL.Path, -1)
-// 		if len(matchGroup) != 1 {
-// 			p.l.Println("Invalid URI, more than one capture group")
-// 			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-// 			return
-// 		} else if len(matchGroup[0]) != 2 {
-// 			p.l.Println("Invalid URI, more than one Id")
-// 			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-// 			return
-// 		}
-// 		id_string := matchGroup[0][1]
-// 		id, err := strconv.Atoi(id_string)
-
-// 		if err != nil {
-
-// 		}
-// 		p.updateProduct(rw, r, id)
-// 		return
-
-// 	}
-// 	rw.WriteHeader(http.StatusMethodNotAllowed)
-// }
-
 func (p *Product) GetProduct(rw http.ResponseWriter, r *http.Request) {
 	lp := data.GetProducts()
 	err := lp.ToJson(rw)
@@ -60,14 +27,10 @@ func (p *Product) GetProduct(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *Product) addProduct(rw http.ResponseWriter, r *http.Request) {
+func (p *Product) AddProduct(rw http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Handling Post Request")
-	prod := &data.Product{}
-	err := prod.FromJson(r.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
+	prod := r.Context().Value(KeyProduct{}).(*data.Product)
 	data.AddProduct(prod)
 }
 
@@ -79,11 +42,31 @@ func (p *Product) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "Unable to convert id", http.StatusBadRequest)
 		return
 	}
-	prod := &data.Product{}
-	err = prod.FromJson(r.Body)
-
+	prod := r.Context().Value(KeyProduct{}).(*data.Product)
 	err = data.UpdateProduct(id, prod)
 	if err == data.ProductNotFound {
 		http.Error(rw, "Product not found", http.StatusNotFound)
+		return
 	}
+	if err != nil {
+		http.Error(rw, "Product not found", http.StatusInternalServerError)
+		return
+	}
+}
+
+type KeyProduct struct{}
+
+func (p Product) JsonValidationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		p.l.Println("cp---1")
+		prod := data.Product{}
+		err := prod.FromJson(r.Body)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		ctx := context.WithValue(r.Context(), KeyProduct{}, &prod)
+		req := r.WithContext(ctx)
+		next.ServeHTTP(rw, req)
+	})
 }
