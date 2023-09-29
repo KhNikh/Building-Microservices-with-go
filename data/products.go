@@ -14,7 +14,7 @@ type Product struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 	Price       int    `json:"price" validate:"gt=0"`
-	SKU         string `json:"sku" validation:"required"`
+	SKU         string `json:"sku" validate:"required,sku"`
 	CreationOn  string `json:"-"`
 	UpdationOn  string `json:"-"`
 	DeletionOn  string `json:"-"`
@@ -23,10 +23,12 @@ type Product struct {
 func (p *Product) ValidateProduct() error {
 	validate := validator.New()
 	validate.RegisterValidation("sku", validateSKU)
+	fmt.Println("final checkpoint")
 	return validate.Struct(p)
 }
 
 func validateSKU(fl validator.FieldLevel) bool {
+	fmt.Println("sku validation")
 	sku := fl.Field().String()
 	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
 	result := re.FindAllString(sku, -1)
