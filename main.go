@@ -17,6 +17,7 @@ func main() {
 
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
 	// hh := handlers.NewHello(l)
+	//create a new server mux and register the handlers
 	sm := mux.NewRouter()
 	// sm.Handle("/", hh)
 
